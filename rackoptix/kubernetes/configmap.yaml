@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rackoptix-config
+  namespace: rackoptix
+data:
+  # Database configuration
+  POSTGRES_DB: "rackoptix"
+  POSTGRES_HOST: "rackoptix-db"
+  POSTGRES_PORT: "5432"
+  
+  # Backend configuration
+  BACKEND_PORT: "8000"
+  BACKEND_HOST: "rackoptix-backend"
+  
+  # API configuration
+  API_PORT: "3000"
+  API_HOST: "rackoptix-api"
+  NODE_ENV: "production"
+  
+  # Frontend configuration
+  FRONTEND_PORT: "80"
+  FRONTEND_HOST: "rackoptix-frontend"
+  
+  # Logging configuration
+  LOG_LEVEL: "info"

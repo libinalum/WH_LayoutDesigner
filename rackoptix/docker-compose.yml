@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database with PostGIS extension
+  db:
+    image: postgis/postgis:14-3.2
+    container_name: rackoptix-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rackoptix
+      POSTGRES_PASSWORD: rackoptix_password
+      POSTGRES_DB: rackoptix
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rackoptix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend optimization engine
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rackoptix-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://rackoptix:rackoptix_password@db:5432/rackoptix
+      PORT: 8000
+      NODE_ENV: production
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API layer
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: rackoptix-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://rackoptix:rackoptix_password@db:5432/rackoptix
+      OPTIMIZATION_ENGINE_URL: http://backend:8000
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rackoptix-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    # Custom nginx configuration to proxy API requests
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+
+volumes:
+  postgres_data:

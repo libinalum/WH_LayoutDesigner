@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+**/node_modules/
+**/venv/
+**/__pycache__/
+**/.pytest_cache/
+**/dist/
+**/build/
+
+# Environment variables
+.env
+**/.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+**/coverage/
+**/.nyc_output/
+**/.coverage
+**/htmlcov/
+
+# Database
+*.sqlite
+*.db
+
+# Temporary files
+**/tmp/
+**/temp/
